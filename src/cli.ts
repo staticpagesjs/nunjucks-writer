@@ -1,7 +1,5 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { Script } from 'vm';
-import * as yaml from 'js-yaml';
 import { fileWriterOptionsFromCliParameters } from '@static-pages/file-writer';
 import { nunjucksWriter, NunjucksWriterOptions } from './index.js';
 
@@ -81,18 +79,12 @@ export const nunjucksWriterOptionsFromCliParameters = async (cliParams: Record<s
 	}
 
 	// GLOBALS
-	if (typeof globals === 'string') {
-		if (!fs.existsSync(globals)) {
-			throw new Error(`nunjucks-writer 'globals': '${globals}' file does not exists.`);
+	const importedGlobals = await tryImportModuleCli('globals', globals);
+	if (typeof importedGlobals !== 'undefined') {
+		if (!isObject(importedGlobals)) {
+			throw new Error('nunjucks-writer failed to load module specified in \'globals\' option: imported value is not an object.');
 		}
-		try {
-			options.globals = yaml.load(fs.readFileSync(globals, 'utf-8')) as NunjucksWriterOptions['globals'];
-		} catch (e) {
-			throw new Error('nunjucks-writer \'globals\' failed to open/parse file.');
-		}
-		if (typeof options.globals !== 'object' && !options.globals) {
-			throw new Error('nunjucks-writer \'globals\' failed to retrieve object map.');
-		}
+		options.globals = importedGlobals;
 	}
 
 	// FUNCTIONS
