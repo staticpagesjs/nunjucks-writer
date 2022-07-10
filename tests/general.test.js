@@ -4,7 +4,7 @@ jest.spyOn(fs, 'writeFileSync').mockImplementation();
 jest.spyOn(fs, 'mkdirSync').mockImplementation();
 
 const path = require('path');
-const nunjucksWriter = require('../cjs/index').default;
+const { nunjucksWriter } = require('../cjs/index');
 
 process.chdir(__dirname); // cwd should be in tests folder where we provide a proper folder structure.
 // TODO: mock fs to provide a more stable environment for the tests?
@@ -22,10 +22,11 @@ test('can render a simple template', async () => {
 	const writer = nunjucksWriter();
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -42,10 +43,11 @@ test('can set multiple views dir with initial view', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = '__*<p>foo</p>*__';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -61,10 +63,11 @@ test('can use globals', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'foo bar';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -77,44 +80,26 @@ test('can set output dir', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
 	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
 });
 
-test('can set outfile name via output.path', async () => {
+test('can set outfile name via url', async () => {
 	const writer = nunjucksWriter();
 
 	await writer({
-		output: {
-			path: 'my/output.file'
-		},
+		url: 'my/output.file',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/my/output.file');
-	const expectedContent = 'hello world!<p>foo</p>';
-
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
-});
-
-test('can set outfile name via output.url', async () => {
-	const writer = nunjucksWriter();
-
-	await writer({
-		output: {
-			url: 'my/output.file'
-		},
-		body: 'foo',
-	});
-
-	const expectedPath = path.resolve('build/my/output.file.html');
+	const expectedPath = path.resolve('dist/my/output.file.html');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -131,7 +116,7 @@ test('can set outfile name via header.path', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/my/output.html');
+	const expectedPath = path.resolve('dist/my/output.html');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -147,7 +132,7 @@ test('can set outfile name via outFile option', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/my/output.file');
+	const expectedPath = path.resolve('dist/my/output.file');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -163,10 +148,11 @@ test('can set additional nunjucks functions', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo bar',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'foo bar';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -183,10 +169,11 @@ test('can set additional nunjucks functions with options', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: '<foo>',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = '&lt;foo&gt;<foo>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -202,10 +189,11 @@ test('can set additional nunjucks filters', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo bar',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'foo bar';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -222,10 +210,11 @@ test('can set additional nunjucks filters with options', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: '<foo>',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = '&lt;foo&gt;<foo>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -238,10 +227,11 @@ test('can configure with advanced configuration', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = 'hello world!<p>foo</p>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
@@ -271,10 +261,11 @@ test('can configure showdown filter', async () => {
 	});
 
 	await writer({
+		url: 'unnamed',
 		body: '# foo',
 	});
 
-	const expectedPath = path.resolve('build/unnamed-1.html');
+	const expectedPath = path.resolve('dist/unnamed.html');
 	const expectedContent = '<h2 id="foo">foo</h2>';
 
 	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
