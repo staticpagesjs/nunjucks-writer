@@ -3,7 +3,6 @@ import { Environment, FileSystemLoader, runtime as nunjucksRuntime } from 'nunju
 import { fileWriter, FileWriterOptions } from '@static-pages/file-writer';
 
 export * as nunjucks from 'nunjucks';
-export * from './cli.js';
 
 export type NunjucksWriterOptions = {
 	view?: string | { (data: Record<string, unknown>): string };
