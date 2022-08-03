@@ -1,8 +1,8 @@
 import showdown from 'showdown';
-import { Environment, FileSystemLoader, runtime as nunjucksRuntime } from 'nunjucks';
+import nunjucks from 'nunjucks';
 import { fileWriter, FileWriterOptions } from '@static-pages/file-writer';
 
-export * as nunjucks from 'nunjucks';
+export { nunjucks };
 
 export type NunjucksWriterOptions = {
 	view?: string | { (data: Record<string, unknown>): string };
@@ -12,24 +12,22 @@ export type NunjucksWriterOptions = {
 	globals?: Record<string, unknown>;
 	functions?: Record<string, { (...args: unknown[]): unknown }>;
 	filters?: Record<string, { (...args: unknown[]): unknown }>;
-	advanced?: { (env: Environment): void };
+	advanced?: { (env: nunjucks.Environment): void };
 	showdownEnabled?: boolean;
 	showdownOptions?: showdown.ConverterOptions;
 } & Omit<FileWriterOptions, 'renderer'>;
 
-export const nunjucksWriter = (options: NunjucksWriterOptions = {}) => {
-	const {
-		view = 'main.html',
-		viewsDir = 'views',
-		globals = {},
-		functions = {},
-		filters = {},
-		advanced = () => undefined,
-		showdownEnabled = true,
-		showdownOptions = {},
-		...rest
-	} = options;
-
+export const nunjucksWriter = ({
+	view = 'main.html',
+	viewsDir = 'views',
+	globals = {},
+	functions = {},
+	filters = {},
+	advanced = () => undefined,
+	showdownEnabled = true,
+	showdownOptions = {},
+	...rest
+}: NunjucksWriterOptions = {}) => {
 	if (typeof view !== 'string' && typeof view !== 'function')
 		throw new Error('nunjucks-writer \'view\' option expects a string or a function.');
 
@@ -52,7 +50,7 @@ export const nunjucksWriter = (options: NunjucksWriterOptions = {}) => {
 		throw new Error('nunjucks-writer \'showdownOptions\' option expects an object.');
 
 	// Create Nunjucks env
-	const env = new Environment(new FileSystemLoader(viewsDir));
+	const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsDir));
 
 	// Provide a built-in markdown filter
 	if (showdownEnabled) {
@@ -63,7 +61,7 @@ export const nunjucksWriter = (options: NunjucksWriterOptions = {}) => {
 			tables: true,
 			...showdownOptions,
 		});
-		env.addFilter('markdown', md => new nunjucksRuntime.SafeString(converter.makeHtml(md)));
+		env.addFilter('markdown', md => new nunjucks.runtime.SafeString(converter.makeHtml(md)));
 	}
 
 	// Globals

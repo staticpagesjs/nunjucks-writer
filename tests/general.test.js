@@ -1,16 +1,16 @@
-const fs = require('fs');
-const { nunjucks } = require('../cjs/index.js');
-jest.spyOn(fs, 'writeFileSync').mockImplementation();
-jest.spyOn(fs, 'mkdirSync').mockImplementation();
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import rimraf from 'rimraf';
+import { nunjucksWriter, nunjucks } from '../esm/index.js';
 
-const path = require('path');
-const { nunjucksWriter } = require('../cjs/index');
+// cwd should be in tests folder where we provide a proper folder structure.
+process.chdir(path.dirname(fileURLToPath(import.meta.url)));
 
-process.chdir(__dirname); // cwd should be in tests folder where we provide a proper folder structure.
 // TODO: mock fs to provide a more stable environment for the tests?
 
 afterEach(() => {
-	jest.clearAllMocks();
+	rimraf.sync('dist');
 });
 
 test('can initialize a writer with default parameters', async () => {
@@ -26,19 +26,19 @@ test('can render a simple template', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set multiple views dir with initial view', async () => {
 	const writer = nunjucksWriter({
 		view: 'userview.html',
 		viewsDir: [
-			'config/userViews1',
-			'config/userViews2'
+			'views2/userViews1',
+			'views2/userViews2'
 		]
 	});
 
@@ -47,11 +47,11 @@ test('can set multiple views dir with initial view', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = '__*<p>foo</p>*__';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can use globals', async () => {
@@ -67,11 +67,11 @@ test('can use globals', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'foo bar';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set output dir', async () => {
@@ -84,11 +84,11 @@ test('can set output dir', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set outfile name via url', async () => {
@@ -99,11 +99,11 @@ test('can set outfile name via url', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/my/output.file.html');
+	const expectedPath = 'dist/my/output.file.html';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set outfile name via header.path', async () => {
@@ -116,11 +116,11 @@ test('can set outfile name via header.path', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/my/output.html');
+	const expectedPath = 'dist/my/output.html';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set outfile name via outFile option', async () => {
@@ -132,11 +132,11 @@ test('can set outfile name via outFile option', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/my/output.file');
+	const expectedPath = 'dist/my/output.file';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set additional nunjucks functions', async () => {
@@ -152,11 +152,11 @@ test('can set additional nunjucks functions', async () => {
 		body: 'foo bar',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'foo bar';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set additional nunjucks functions with options', async () => {
@@ -173,11 +173,11 @@ test('can set additional nunjucks functions with options', async () => {
 		body: '<foo>',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = '&lt;foo&gt;<foo>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set additional nunjucks filters', async () => {
@@ -193,11 +193,11 @@ test('can set additional nunjucks filters', async () => {
 		body: 'foo bar',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'foo bar';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can set additional nunjucks filters with options', async () => {
@@ -214,11 +214,11 @@ test('can set additional nunjucks filters with options', async () => {
 		body: '<foo>',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = '&lt;foo&gt;<foo>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can configure with advanced configuration', async () => {
@@ -231,11 +231,11 @@ test('can configure with advanced configuration', async () => {
 		body: 'foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = 'hello world!<p>foo</p>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
 
 test('can turn off custom markdown filter', async () => {
@@ -247,7 +247,7 @@ test('can turn off custom markdown filter', async () => {
 		await writer({
 			body: 'foo',
 		});
-	  })
+	})
 		.rejects
 		.toThrow('Error: filter not found: markdown');
 });
@@ -265,9 +265,9 @@ test('can configure showdown filter', async () => {
 		body: '# foo',
 	});
 
-	const expectedPath = path.resolve('dist/unnamed.html');
+	const expectedPath = 'dist/unnamed.html';
 	const expectedContent = '<h2 id="foo">foo</h2>';
 
-	expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-	expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, expectedContent);
+	expect(fs.existsSync(expectedPath)).toBe(true);
+	expect(fs.readFileSync(expectedPath, 'utf-8')).toBe(expectedContent);
 });
