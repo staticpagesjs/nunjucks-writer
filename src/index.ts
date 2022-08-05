@@ -1,6 +1,8 @@
-import showdown from 'showdown';
-import nunjucks from 'nunjucks';
+import * as showdown from 'showdown';
+import * as nunjucksImport from 'nunjucks';
 import { fileWriter, FileWriterOptions } from '@static-pages/file-writer';
+
+const nunjucks = (nunjucksImport as unknown as { default: typeof nunjucksImport })?.default ?? nunjucksImport;
 
 export { nunjucks };
 
@@ -12,7 +14,7 @@ export type NunjucksWriterOptions = {
 	globals?: Record<string, unknown>;
 	functions?: Record<string, { (...args: unknown[]): unknown }>;
 	filters?: Record<string, { (...args: unknown[]): unknown }>;
-	advanced?: { (env: nunjucks.Environment): void };
+	advanced?: { (env: nunjucksImport.Environment): void };
 	showdownEnabled?: boolean;
 	showdownOptions?: showdown.ConverterOptions;
 } & Omit<FileWriterOptions, 'renderer'>;
@@ -54,7 +56,7 @@ export const nunjucksWriter = ({
 
 	// Provide a built-in markdown filter
 	if (showdownEnabled) {
-		const converter = new showdown.Converter({
+		const converter = new ((showdown as unknown as { default: typeof showdown })?.default ?? showdown).Converter({
 			simpleLineBreaks: true,
 			ghCompatibleHeaderId: true,
 			customizedHeaderId: true,
